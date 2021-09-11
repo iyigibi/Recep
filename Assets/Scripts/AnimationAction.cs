@@ -5,13 +5,10 @@ using UnityEngine;
 public class AnimationAction : MonoBehaviour
 {
     private Rigidbody[] rigidbodies;
-    private Rigidbody myRigitbody;
     private Animator myAnimator;
-    public static GameObject animationAction;
     // Start is called before the first frame update
     void Start()
     {
-        //animationAction=this.insta
         rigidbodies=GetComponentsInChildren<Rigidbody>();
         myAnimator=this.GetComponent<Animator>();
         RagdollState(false,true);
@@ -34,13 +31,4 @@ public class AnimationAction : MonoBehaviour
         RagdollState(true);
     }
 
-    private void OnCollisionEnter(Collision other) {
-        //Debug.Log();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
