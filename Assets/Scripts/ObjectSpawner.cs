@@ -15,5 +15,6 @@ public class ObjectSpawner : MonoBehaviour
     void FixedUpdate()
     {
         pooler.SpawnFromPool("Bomb",transform.position,Quaternion.identity);
+        pooler.SpawnFromPool("Coin",transform.position,Quaternion.identity);
     }
 }
