@@ -8,7 +8,7 @@ public class Bomb : MonoBehaviour, IPooledObject
     public void OnObjectSpawn()
     {
         //Debug.Log("asd");
-        transform.Translate(new Vector3(Random.Range(-10,10),Random.Range(-10,10),Random.Range(-10,10)));
+        transform.Translate(new Vector3(Random.Range(-3f,3f),Random.Range(0f,10f),Random.Range(-10f,10f)));
     }
 
 }
