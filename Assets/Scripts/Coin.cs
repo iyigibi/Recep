@@ -6,8 +6,16 @@ public class Coin : Item
 {
     public Coin(){
         this.name_="coin";
+        isHit=false;
     }
-    public void collected(){
+    public override bool doStuff()
+    {
+        //base.doStuff();
+        collected();
+        return isHit;
+    }
+    private void collected(){
+        Debug.Log("Coin collected!");
         gameObject.SetActive(false);
     }
     

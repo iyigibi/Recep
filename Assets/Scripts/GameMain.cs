@@ -8,9 +8,11 @@ public class GameMain : MonoBehaviour
     private Rigidbody[] rigidbodies;
     private Rigidbody myRigitbody;
     private Animator myAnimator;
-    private bool isDragging=false;
+    private bool isDragging,isThrew=false;
     private Vector3 startPos,startSlingPos,delta,shootForce,dragScreenPos,forceVector;
-    public LineRenderer myRope;
+
+    [SerializeField]
+    private LineRenderer myRope,trajectionLine;
     
     
     private Transform charHipObj;
@@ -24,6 +26,7 @@ public class GameMain : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        trajectionLine.positionCount=20;
         pooler=Pooler.Instance;
         charHipObj=GameObject.FindWithTag("charHip").transform;
         startSlingPos=charHipObj.position+Vector3.down;
@@ -40,8 +43,9 @@ public class GameMain : MonoBehaviour
         RagdollState(false);
 
         for(int i=0;i<100;i++){
-            pooler.SpawnFromPool("Bomb",new Vector3(Random.Range(-3f,3f),Random.Range(0f,10f),Random.Range(-10f,10f)),Quaternion.identity);
-            pooler.SpawnFromPool("Coin",new Vector3(Random.Range(-3f,3f),Random.Range(0f,10f),Random.Range(-10f,10f)),Quaternion.identity);
+            pooler.SpawnFromPool("Coin",new Vector3(0f,5f+Mathf.Sin(i*0.04f)*5f,i*.2f-20),Quaternion.identity);
+            pooler.SpawnFromPool("Bomb",new Vector3(Mathf.Sin(i*0.04f)*1f,5f+Mathf.Sin((i)*0.04f)*5f,i*.2f-20),Quaternion.identity);
+        
         }
     }
 
@@ -58,18 +62,25 @@ public class GameMain : MonoBehaviour
         myRigitbody.detectCollisions=!state;
 
     }
-
+//476,78
     private void OnTriggerEnter(Collider other) {
-        if(other.CompareTag("coin")){
-            other.GetComponent<Coin>().collected();
-            return;
+        Item item=other.GetComponent<Item>();
+        if( item ){
+            if(item.isHit){
+                RagdollState(true);
+
+            }
+            item.doStuff();
+        }else{
+            RagdollState(true);
         }
-        
-        myAnimator.SetInteger("state",3);
-        RagdollState(true);
     }
 
     private void Update() {
+        
+        if(isThrew)
+        return;
+
         if (Input.GetMouseButtonDown(0))
         {
             startPos = Input.mousePosition;
@@ -78,6 +89,7 @@ public class GameMain : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0))
         {
+            isThrew=true;
             //Time.timeScale=0.2f;
             //SET MOUSE DELTA
             delta = Input.mousePosition-startPos;
@@ -86,27 +98,36 @@ public class GameMain : MonoBehaviour
             myAnimator.SetInteger("state",2);
             myRigitbody.useGravity=true;
             //Fire!
-            myRigitbody.AddForce(forceVector);
+            myRigitbody.velocity=forceVector;
+           // myRigitbody.AddForce(forceVector);
         }
         if(isDragging){
             delta = Input.mousePosition-startPos;
             if(delta.y>10)
             return;
-            forceVector=new Vector3((-delta.x*3f),delta.y*(-3f),delta.y*(-3f));
-            Vector3 posNew=startSlingPos-forceVector*0.001f;
+            forceVector=new Vector3((-delta.x*0.05f),delta.y*(-0.05f),delta.y*(-0.05f));
+            Vector3 posNew=startSlingPos-forceVector*0.015f;
             charObj.position=posNew;
             charObj.forward=forceVector.normalized;
-            
-            aimPointObj.position=startSlingPos+forceVector*0.001f;
-
 
             Vector3 charhipPos=charHipObj.position;
+            aimPointObj.position=charhipPos+forceVector*0.3f;
             myRope.SetPosition(1, charhipPos);
             seat.SetPositionAndRotation(charhipPos,charObj.rotation);
-          
+
+            
+
+            for(int i=0;i<trajectionLine.positionCount;i++){
+                float deltaT=i*0.1f;
+                trajectionLine.SetPosition(i,new Vector3(
+                    
+                    startSlingPos.x+forceVector.x*deltaT,
+                    startSlingPos.y+0.2f+forceVector.y*deltaT-5f*Mathf.Pow(deltaT,2),
+                    startSlingPos.z+forceVector.z*deltaT));
+            }
         }
         
-
+        
 
         
     }
