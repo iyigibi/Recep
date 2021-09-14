@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameMain : MonoBehaviour
@@ -20,16 +18,17 @@ public class GameMain : MonoBehaviour
     private Transform aimPointObj,seat,charObj,leftSlingObj,rightSlingObj;
 
     [SerializeField]
-    private GameObject cinemachineStateMode;
+    private GameObject cinemachineStateMode,cinemachineRagdoll;
 
 
-    // Start is called before the first frame update
     void Start()
     {
         trajectionLine.positionCount=20;
         pooler=Pooler.Instance;
         charHipObj=GameObject.FindWithTag("charHip").transform;
         startSlingPos=charHipObj.position+Vector3.down;
+
+        //SET ROPE
         myRope.SetPosition(0, leftSlingObj.position);
         myRope.SetPosition(1, charHipObj.position);
         myRope.SetPosition(2, rightSlingObj.position);
@@ -38,10 +37,10 @@ public class GameMain : MonoBehaviour
         myAnimator=this.GetComponent<Animator>();
 
         
-        
+        //ANIMETE IDLE
         myAnimator.SetInteger("state",0);
         RagdollState(false);
-
+        //SPAWN ITEMS
         for(int i=0;i<100;i++){
             pooler.SpawnFromPool("Coin",new Vector3(0f,5f+Mathf.Sin(i*0.04f)*5f,i*.2f-20),Quaternion.identity);
             pooler.SpawnFromPool("Bomb",new Vector3(Mathf.Sin(i*0.04f)*1f,5f+Mathf.Sin((i)*0.04f)*5f,i*.2f-20),Quaternion.identity);
@@ -49,6 +48,7 @@ public class GameMain : MonoBehaviour
         }
     }
 
+//SET RAGDOOL STATE
     void RagdollState(bool state){
         foreach(Rigidbody item in rigidbodies)
                 {
@@ -62,18 +62,31 @@ public class GameMain : MonoBehaviour
         myRigitbody.detectCollisions=!state;
 
     }
-//476,78
+//
     private void OnTriggerEnter(Collider other) {
         Item item=other.GetComponent<Item>();
         if( item ){
+            //ITEM HIT
             if(item.isHit){
                 RagdollState(true);
-
+                Time.timeScale=0.5f;
+                Invoke("setTimeScale", 1.0f);
             }
+            //ITEM COLLECT
             item.doStuff();
         }else{
+            //ITEM HIT OTHER STUFF
             RagdollState(true);
+            //THIS STOPS SHAKE
+            cinemachineRagdoll.SetActive(false);
         }
+    }
+
+    void setTimeScale()
+    {
+        //THIS STOPS SHAKE
+        cinemachineRagdoll.SetActive(false);
+        Time.timeScale=1f;
     }
 
     private void Update() {
@@ -99,12 +112,13 @@ public class GameMain : MonoBehaviour
             myRigitbody.useGravity=true;
             //Fire!
             myRigitbody.velocity=forceVector;
-           // myRigitbody.AddForce(forceVector);
         }
         if(isDragging){
             delta = Input.mousePosition-startPos;
+            //CHECK FOR POWER
             if(delta.y>10)
             return;
+            //FORCE VECTOR
             forceVector=new Vector3((-delta.x*0.05f),delta.y*(-0.05f),delta.y*(-0.05f));
             Vector3 posNew=startSlingPos-forceVector*0.015f;
             charObj.position=posNew;
@@ -115,8 +129,7 @@ public class GameMain : MonoBehaviour
             myRope.SetPosition(1, charhipPos);
             seat.SetPositionAndRotation(charhipPos,charObj.rotation);
 
-            
-
+            //TRAJECTION
             for(int i=0;i<trajectionLine.positionCount;i++){
                 float deltaT=i*0.1f;
                 trajectionLine.SetPosition(i,new Vector3(
@@ -133,6 +146,7 @@ public class GameMain : MonoBehaviour
     }
     private void fixedUpdate() {
         if(myRigitbody.velocity.magnitude>0){
+            //ROTATE MAN
             charObj.forward=myRigitbody.velocity.normalized;
         }   
     }

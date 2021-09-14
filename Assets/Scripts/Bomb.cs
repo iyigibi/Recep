@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Bomb : Item
 {
+    
     static private int ind=0;
     private int indx;
     public Bomb(){
@@ -21,16 +20,13 @@ public class Bomb : Item
         return isHit;
     }
     public void bang(){
+        Time.timeScale=0.5f;
         Debug.Log("BANG!");
-        Collider[] colliders=Physics.OverlapSphere(transform.position,1f);
-        
-        
-        foreach(Collider col in colliders){
-            Debug.Log("collide"+col.gameObject.name);
+        foreach(Collider col in Physics.OverlapSphere(transform.position,1f)){
             Rigidbody rig=col.GetComponent<Rigidbody>();
             if(rig)
             {
-                rig.AddExplosionForce(50f,transform.position,5f,1f,ForceMode.Impulse);
+                rig.AddExplosionForce(20f,transform.position,5f,1f,ForceMode.Impulse);
             }
         }
         gameObject.SetActive(false);
@@ -40,7 +36,8 @@ public class Bomb : Item
 
     protected override void Update()
     {
-        transform.position=new Vector3(startPos.x+Mathf.Sin(Time.time+indx*0.04f)*2f,startPos.y,startPos.z);
+        //ANIMATE
+        transform.position=new Vector3(startPos.x+Mathf.Sin(Time.time*0.3f+indx*0.04f)*2f,startPos.y+Mathf.Sin(Time.time+indx*0.04f)*2f,startPos.z);
     }
     
 }
